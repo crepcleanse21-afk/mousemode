@@ -166,7 +166,7 @@ function log(text) {
 }
 
 function initPeer() {
-  peer = new Peer(undefined, {debug:0});
+  peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, path: '/', secure: true, debug: 0, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } });
 
   peer.on('open', () => {
     document.getElementById('peer-dot').classList.remove('pulse');
@@ -190,7 +190,7 @@ function connectToPhone() {
   // Find the phone's peer ID — the phone's ID ends with the 6-char code
   // We search for peers whose ID ends with the entered code
   // PeerJS doesn't have a lookup API, so the phone ID IS the last 6 chars lowercased
-  const guessedId = input.toLowerCase();
+  const guessedId = 'mm-' + input.toLowerCase();
 
   if (conn) { try{conn.close();}catch(e){} }
 
