@@ -4,10 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<title>Mouse Mode — Phone</title>
+<title>Mouse Mode</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <style>
 :root{
   --bg:#f5f4f0;--bg2:#eceae4;--surface:#fff;
@@ -22,46 +22,21 @@
   --shadow:0 1px 3px rgba(0,0,0,0.3),0 4px 16px rgba(0,0,0,0.2);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{
-  font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
-  height:100dvh;display:flex;flex-direction:column;overflow:hidden;
-  overscroll-behavior:none;-webkit-user-select:none;user-select:none;
-  transition:background .2s,color .2s;
-}
-
-/* ── CONNECTING ── */
-#scr-conn{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100dvh;gap:14px;padding:36px;text-align:center;
-}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100dvh;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;transition:background .2s,color .2s;}
+#scr-conn{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;gap:14px;padding:36px;text-align:center;}
 .logo{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;}
 .c-title{font-size:22px;font-weight:300;letter-spacing:-.02em;}
 .c-sub{font-size:14px;color:var(--text2);font-weight:300;line-height:1.6;max-width:280px;}
 .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--text);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-.code-box{
-  background:var(--surface);border:1px solid var(--border);border-radius:14px;
-  padding:24px 28px;box-shadow:var(--shadow);width:100%;max-width:280px;text-align:center;
-}
+.code-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;box-shadow:var(--shadow);width:100%;max-width:280px;text-align:center;}
 .code-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;}
 .code-val{font-family:'DM Mono',monospace;font-size:34px;font-weight:500;letter-spacing:.1em;color:var(--text);}
 .code-hint{font-size:12px;color:var(--text3);margin-top:10px;line-height:1.5;}
-
-.c-err{
-  display:none;padding:13px 15px;background:var(--bg2);border-radius:var(--rs);
-  font-size:13px;color:var(--text2);line-height:1.7;border:1px solid var(--border);
-  width:100%;max-width:300px;text-align:left;white-space:pre-line;
-}
+.c-err{display:none;padding:14px 16px;background:var(--bg2);border-radius:var(--rs);font-size:13px;color:var(--text2);line-height:1.7;border:1px solid var(--border);width:100%;max-width:300px;text-align:left;white-space:pre-line;}
 .c-err.show{display:block;}
-.retry-btn{
-  padding:12px 26px;background:var(--accent);color:var(--accent-fg);border:none;
-  border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;
-  font-weight:500;cursor:pointer;display:none;
-}
+.retry-btn{padding:12px 26px;background:var(--accent);color:var(--accent-fg);border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;display:none;}
 .retry-btn.show{display:block;}
-
-/* ── APP ── */
 #scr-app{display:none;flex-direction:column;height:100dvh;}
 #scr-app.active{display:flex;}
 .hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;}
@@ -74,8 +49,6 @@ body{
 .conn-pill{display:flex;align-items:center;gap:5px;padding:4px 9px;background:var(--green-bg);border-radius:20px;font-size:11px;color:var(--green);font-family:'DM Mono',monospace;}
 .cpd{width:6px;height:6px;border-radius:50%;background:var(--green);}
 .icon-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;box-shadow:var(--shadow);}
-
-/* ── PAD ── */
 .pad{flex:1;position:relative;touch-action:none;overflow:hidden;background:var(--bg);}
 #cam-feed{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.07;display:none;pointer-events:none;}
 #cam-feed.active{display:block;}
@@ -90,25 +63,20 @@ body{
 .gl{font-size:13px;color:var(--text2);font-weight:300;line-height:1.6;}
 .ripple{position:absolute;width:40px;height:40px;border-radius:50%;background:var(--text);opacity:0;transform:scale(0);pointer-events:none;margin-left:-20px;margin-top:-20px;animation:pop .42s ease-out forwards;}
 @keyframes pop{0%{opacity:.12;transform:scale(0);}40%{opacity:.12;transform:scale(1);}100%{opacity:0;transform:scale(2.2);}}
-
 .mouse-controls{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;opacity:0;transition:opacity .3s;pointer-events:none;}
 .mouse-controls.visible{opacity:1;pointer-events:auto;}
 .mc{padding:11px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text2);cursor:pointer;box-shadow:var(--shadow);transition:background .1s,transform .1s;}
 .mc:active,.mc.down{background:var(--bg2);transform:scale(.96);color:var(--text);}
 .mc-sc{font-size:16px;padding:11px 14px;}
-
 .sliders-col{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:22px;}
 .slg{display:flex;flex-direction:column;align-items:center;gap:5px;}
 .sll{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;writing-mode:vertical-lr;transform:rotate(180deg);}
 input[type=range].vsl{-webkit-appearance:none;appearance:none;width:88px;height:2px;background:var(--border);border-radius:2px;outline:none;writing-mode:vertical-lr;direction:rtl;cursor:pointer;}
 input[type=range].vsl::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--text);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.15);}
-
 .btn-row{display:flex;gap:6px;padding:10px 14px 28px;flex-shrink:0;}
 .mbtn{flex:1;padding:16px 8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text2);cursor:pointer;box-shadow:var(--shadow);transition:background .1s,transform .1s;}
 .mbtn:active,.mbtn.down{background:var(--bg2);transform:scale(.97);color:var(--text);}
 .sbtn{flex:.55;font-size:17px;}
-
-/* ── SHEETS ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.28);z-index:50;backdrop-filter:blur(2px);}
 .overlay.open{display:block;}
 .sheet{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;padding:18px 22px 44px;z-index:51;transform:translateY(100%);transition:transform .28s ease;border-top:1px solid var(--border);}
@@ -141,24 +109,20 @@ input[type=range].hsl::-webkit-slider-thumb{-webkit-appearance:none;width:20px;h
 </head>
 <body>
 
-<!-- CONNECTING / PAIRING -->
 <div id="scr-conn">
   <div class="logo">mouse mode</div>
   <div class="spinner" id="spinner"></div>
-  <div class="c-title" id="c-title">Getting ready…</div>
-  <div class="c-sub" id="c-sub">Setting up your connection</div>
-
+  <div class="c-title" id="c-title">Connecting…</div>
+  <div class="c-sub" id="c-sub">Reaching server</div>
   <div class="code-box" id="code-box" style="display:none;">
     <div class="code-lbl">Your pairing code</div>
     <div class="code-val" id="code-val">------</div>
-    <div class="code-hint">Open mousemode on your laptop<br>and enter this code to connect</div>
+    <div class="code-hint">Open Mouse Mode on your laptop<br>and enter this code</div>
   </div>
-
   <div class="c-err" id="c-err"></div>
-  <button class="retry-btn" id="retry-btn" onclick="initPeer()">Try again</button>
+  <button class="retry-btn" id="retry-btn" onclick="initSocket()">Try again</button>
 </div>
 
-<!-- APP -->
 <div id="scr-app">
   <div class="hdr">
     <div class="hdr-logo">mouse mode</div>
@@ -174,7 +138,6 @@ input[type=range].hsl::-webkit-slider-thumb{-webkit-appearance:none;width:20px;h
       <div class="icon-btn" id="theme-btn" onclick="toggleTheme()">☾</div>
     </div>
   </div>
-
   <div class="pad" id="pad"
     ontouchstart="onStart(event)" ontouchmove="onMove(event)" ontouchend="onEnd(event)">
     <video id="cam-feed" autoplay playsinline muted></video>
@@ -192,17 +155,10 @@ input[type=range].hsl::-webkit-slider-thumb{-webkit-appearance:none;width:20px;h
       <button class="mc" ontouchstart="btnDown(this,'right')" ontouchend="btnUp(this,'right')">Right</button>
     </div>
     <div class="sliders-col">
-      <div class="slg">
-        <div class="sll">Sens</div>
-        <input type="range" class="vsl" id="vsl-sens" min="1" max="10" value="5" oninput="sensitivity=+this.value"/>
-      </div>
-      <div class="slg">
-        <div class="sll">Scroll</div>
-        <input type="range" class="vsl" id="vsl-scroll" min="1" max="20" value="8" oninput="scrollSpeed=+this.value"/>
-      </div>
+      <div class="slg"><div class="sll">Sens</div><input type="range" class="vsl" id="vsl-sens" min="1" max="10" value="5" oninput="sensitivity=+this.value"/></div>
+      <div class="slg"><div class="sll">Scroll</div><input type="range" class="vsl" id="vsl-scroll" min="1" max="20" value="8" oninput="scrollSpeed=+this.value"/></div>
     </div>
   </div>
-
   <div class="btn-row" id="btn-row" style="display:none;">
     <button class="mbtn" ontouchstart="btnDown(this,'left')" ontouchend="btnUp(this,'left')">Left</button>
     <button class="mbtn sbtn" ontouchstart="btnDown(this,'scroll')" ontouchend="btnUp(this,'scroll')">↕</button>
@@ -215,32 +171,11 @@ input[type=range].hsl::-webkit-slider-thumb{-webkit-appearance:none;width:20px;h
 <div class="sheet" id="sh-s">
   <div class="handle"></div>
   <div class="sh-title">Settings</div>
-  <div class="srow-sl">
-    <div class="sn">Mouse sensitivity</div>
-    <div class="hw">
-      <input type="range" class="hsl" min="1" max="10" value="5" oninput="sensitivity=+this.value;document.getElementById('vsl-sens').value=this.value;document.getElementById('sv-s').textContent=this.value"/>
-      <span class="hv" id="sv-s">5</span>
-    </div>
-  </div>
-  <div class="srow-sl">
-    <div class="sn">Scroll intensity</div>
-    <div class="hw">
-      <input type="range" class="hsl" min="1" max="20" value="8" oninput="scrollSpeed=+this.value;document.getElementById('vsl-scroll').value=this.value;document.getElementById('sv-sc').textContent=this.value"/>
-      <span class="hv" id="sv-sc">8</span>
-    </div>
-  </div>
-  <div class="srow">
-    <div><div class="sn">Tap to click</div><div class="snote">Single tap = left click</div></div>
-    <div class="toggle on" id="t-tap" onclick="this.classList.toggle('on')"><div class="tt"></div></div>
-  </div>
-  <div class="srow">
-    <div><div class="sn">Vibration</div></div>
-    <div class="toggle on" id="t-vibe" onclick="this.classList.toggle('on')"><div class="tt"></div></div>
-  </div>
-  <div class="srow">
-    <div><div class="sn">Invert scroll</div></div>
-    <div class="toggle" id="t-inv" onclick="this.classList.toggle('on')"><div class="tt"></div></div>
-  </div>
+  <div class="srow-sl"><div class="sn">Mouse sensitivity</div><div class="hw"><input type="range" class="hsl" min="1" max="10" value="5" oninput="sensitivity=+this.value;document.getElementById('vsl-sens').value=this.value;document.getElementById('sv-s').textContent=this.value"/><span class="hv" id="sv-s">5</span></div></div>
+  <div class="srow-sl"><div class="sn">Scroll intensity</div><div class="hw"><input type="range" class="hsl" min="1" max="20" value="8" oninput="scrollSpeed=+this.value;document.getElementById('vsl-scroll').value=this.value;document.getElementById('sv-sc').textContent=this.value"/><span class="hv" id="sv-sc">8</span></div></div>
+  <div class="srow"><div><div class="sn">Tap to click</div><div class="snote">Single tap = left click</div></div><div class="toggle on" id="t-tap" onclick="this.classList.toggle('on')"><div class="tt"></div></div></div>
+  <div class="srow"><div><div class="sn">Vibration</div></div><div class="toggle on" id="t-vibe" onclick="this.classList.toggle('on')"><div class="tt"></div></div></div>
+  <div class="srow"><div><div class="sn">Invert scroll</div></div><div class="toggle" id="t-inv" onclick="this.classList.toggle('on')"><div class="tt"></div></div></div>
   <button class="btn-g" style="margin-top:16px;" onclick="closeSettings();openSignIn()">Sign in to customise →</button>
   <button class="btn-g" onclick="closeSettings()">Close</button>
 </div>
@@ -260,100 +195,72 @@ input[type=range].hsl::-webkit-slider-thumb{-webkit-appearance:none;width:20px;h
 </div>
 
 <script>
-// ── STATE ──
-let peer = null;
-let conn = null;
-let sensitivity = 5;
-let scrollSpeed = 8;
+const SERVER = 'https://mousemode-production.up.railway.app';
+let socket = null;
+let myCode = '';
+let sensitivity = 5, scrollSpeed = 8;
 let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 let mode = 'mouse';
-let lastTouch = null;
-let twoFinger = false;
-let hintGone = false;
-let gyroListener = null;
-let camStream = null;
-let lastScrollY = null;
-let failCount = 0;
+let lastTouch = null, twoFinger = false, hintGone = false;
+let gyroListener = null, camStream = null, lastScrollY = null;
 
-if (isDark) {
-  document.body.setAttribute('data-theme','dark');
-  document.getElementById('theme-btn').textContent='☀';
-}
+if (isDark) { document.body.setAttribute('data-theme','dark'); document.getElementById('theme-btn').textContent='☀'; }
 
-// ── PEERJS CONNECTION ──
-function initPeer() {
+function initSocket() {
   document.getElementById('c-err').classList.remove('show');
   document.getElementById('retry-btn').classList.remove('show');
   document.getElementById('spinner').style.display='block';
   document.getElementById('code-box').style.display='none';
-  document.getElementById('c-title').textContent='Getting ready…';
-  document.getElementById('c-sub').textContent='Setting up your connection';
+  document.getElementById('c-title').textContent='Connecting…';
+  document.getElementById('c-sub').textContent='Reaching server';
 
-  if (peer) { try{peer.destroy();}catch(e){} }
+  if (socket) { socket.disconnect(); }
 
-  // Generate a short 6-char ID — this IS the pairing code
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let shortId = '';
-  for (let i=0;i<6;i++) shortId += chars[Math.floor(Math.random()*chars.length)];
-  const peerId = 'mm-' + shortId.toLowerCase();
+  socket = io(SERVER, { transports: ['websocket','polling'] });
 
-  peer = new Peer(peerId, {
-    host: '0.peerjs.com',
-    port: 443,
-    path: '/',
-    secure: true,
-    debug: 0,
-    config: { iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
-    ]}
-  });
-
-  peer.on('open', (id) => {
-    document.getElementById('code-val').textContent = shortId;
+  socket.on('connect', () => {
+    // Generate a 6-char code and register with server
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    myCode = '';
+    for (let i=0;i<6;i++) myCode += chars[Math.floor(Math.random()*chars.length)];
+    socket.emit('register-phone', myCode);
+    document.getElementById('code-val').textContent = myCode;
     document.getElementById('code-box').style.display='block';
     document.getElementById('spinner').style.display='none';
     document.getElementById('c-title').textContent='Ready to pair';
     document.getElementById('c-sub').textContent='Enter this code on your laptop';
   });
 
-  peer.on('connection', (c) => {
-    conn = c;
-    conn.on('open', () => {
-      document.getElementById('scr-conn').style.display='none';
-      document.getElementById('scr-app').classList.add('active');
-      setMode('mouse');
-    });
-    conn.on('close', () => {
-      conn = null;
-      document.getElementById('scr-app').classList.remove('active');
-      document.getElementById('scr-conn').style.display='flex';
-      showErr('Connection lost. Re-enter code on laptop.');
-    });
-    conn.on('error', (e) => showErr('Connection error: '+e));
+  socket.on('laptop-joined', () => {
+    document.getElementById('scr-conn').style.display='none';
+    document.getElementById('scr-app').classList.add('active');
+    setMode('mouse');
   });
 
-  peer.on('error', (e) => {
-    failCount++;
-    showErr('Could not connect to pairing server.\nCheck your internet connection.\n\nError: '+e.type);
-    if (failCount>=2) document.getElementById('retry-btn').classList.add('show');
+  socket.on('laptop-disconnected', () => {
+    // Stay on app screen, just show disconnected pill
+  });
+
+  socket.on('connect_error', (e) => {
+    showErr('Cannot reach server.\nCheck your internet connection.\n\n'+e.message);
+    document.getElementById('retry-btn').classList.add('show');
+  });
+
+  socket.on('disconnect', () => {
+    showErr('Disconnected from server. Reconnecting…');
+    setTimeout(initSocket, 3000);
   });
 }
 
 function send(data) {
-  if (conn && conn.open) conn.send(data);
+  if (socket && socket.connected) socket.emit('mouse-event', data);
 }
 
 function showErr(msg) {
   document.getElementById('spinner').style.display='none';
-  const el=document.getElementById('c-err');
-  el.textContent=msg; el.classList.add('show');
+  const el=document.getElementById('c-err'); el.textContent=msg; el.classList.add('show');
 }
 
-// ── MODE ──
 function setMode(m) {
   mode=m;
   document.getElementById('btn-mouse').classList.toggle('active',m==='mouse');
@@ -375,21 +282,18 @@ function setMode(m) {
   }
 }
 
-// ── CAMERA ──
 async function startCamera() {
   try {
     if (camStream) return;
     camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'},width:320,height:240}});
-    const v=document.getElementById('cam-feed');
-    v.srcObject=camStream; v.classList.add('active');
-  } catch(e){console.warn('Camera:',e.message);}
+    const v=document.getElementById('cam-feed'); v.srcObject=camStream; v.classList.add('active');
+  } catch(e){ console.warn('Camera:',e.message); }
 }
 function stopCamera() {
   if (camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
-  const v=document.getElementById('cam-feed');v.srcObject=null;v.classList.remove('active');
+  const v=document.getElementById('cam-feed'); v.srcObject=null; v.classList.remove('active');
 }
 
-// ── GYRO ──
 function startGyro() {
   if (gyroListener) return;
   const req=typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function';
@@ -401,8 +305,7 @@ function attachGyro() {
     const x=e.gamma||0, y=(e.beta||0)-45;
     const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
     const dot=document.getElementById('gyro-dot');
-    dot.style.left=(50+cl(x,-45,45)/45*35)+'%';
-    dot.style.top=(50+cl(y,-45,45)/45*35)+'%';
+    dot.style.left=(50+cl(x,-45,45)/45*35)+'%'; dot.style.top=(50+cl(y,-45,45)/45*35)+'%';
     const dx=Math.round(x*sensitivity*.25), dy=Math.round(y*sensitivity*.25);
     if (Math.abs(dx)>0||Math.abs(dy)>0) send({type:'move',dx,dy});
   };
@@ -412,18 +315,14 @@ function stopGyro() {
   if (gyroListener){window.removeEventListener('deviceorientation',gyroListener);gyroListener=null;}
 }
 
-// ── TOUCH ──
 function onStart(e) {
-  e.preventDefault();
-  twoFinger=e.touches.length>=2;
-  const t=e.touches[0];
-  lastTouch={x:t.clientX,y:t.clientY,t:Date.now()};
+  e.preventDefault(); twoFinger=e.touches.length>=2;
+  const t=e.touches[0]; lastTouch={x:t.clientX,y:t.clientY,t:Date.now()};
   hideHint(); addRipple(t.clientX,t.clientY);
   if (twoFinger) lastScrollY=e.touches[0].clientY;
 }
 function onMove(e) {
-  e.preventDefault();
-  if (!lastTouch) return;
+  e.preventDefault(); if (!lastTouch) return;
   if (e.touches.length>=2) {
     twoFinger=true;
     const curY=e.touches[0].clientY;
@@ -436,57 +335,42 @@ function onMove(e) {
   }
   if (mode==='trackpad') {
     const t=e.touches[0];
-    const dx=(t.clientX-lastTouch.x)*(sensitivity/3);
-    const dy=(t.clientY-lastTouch.y)*(sensitivity/3);
+    const dx=(t.clientX-lastTouch.x)*(sensitivity/3), dy=(t.clientY-lastTouch.y)*(sensitivity/3);
     if (Math.abs(dx)>.2||Math.abs(dy)>.2) send({type:'move',dx:Math.round(dx),dy:Math.round(dy)});
     lastTouch={x:t.clientX,y:t.clientY,t:Date.now()};
   }
 }
 function onEnd(e) {
-  e.preventDefault();
-  if (!lastTouch) return;
+  e.preventDefault(); if (!lastTouch) return;
   const el=Date.now()-lastTouch.t;
-  if (!twoFinger&&el<180&&document.getElementById('t-tap').classList.contains('on')) {
-    vibrate(22); send({type:'click',button:'left'});
-  }
+  if (!twoFinger&&el<180&&document.getElementById('t-tap').classList.contains('on')) { vibrate(22); send({type:'click',button:'left'}); }
   twoFinger=false; lastScrollY=null; lastTouch=null;
 }
 function hideHint(){if(!hintGone){hintGone=true;document.getElementById('pad-hint').classList.add('gone');}}
 function addRipple(x,y){const d=document.createElement('div');d.className='ripple';d.style.left=x+'px';d.style.top=y+'px';document.getElementById('pad').appendChild(d);d.addEventListener('animationend',()=>d.remove());}
 
-// ── SCROLL BTN ──
 function startScroll(e) {
-  e.preventDefault();
-  const btn=e.currentTarget; btn.classList.add('down');
+  e.preventDefault(); const btn=e.currentTarget; btn.classList.add('down');
   let ly=e.touches[0].clientY;
-  function mv(ev){
-    const cy=ev.touches[0].clientY;
-    const dy=(ly-cy)*(scrollSpeed/4);
-    const inv=document.getElementById('t-inv').classList.contains('on');
-    send({type:'scroll',dy:Math.round(inv?-dy:dy)}); ly=cy;
-  }
+  function mv(ev){const cy=ev.touches[0].clientY;const dy=(ly-cy)*(scrollSpeed/4);const inv=document.getElementById('t-inv').classList.contains('on');send({type:'scroll',dy:Math.round(inv?-dy:dy)});ly=cy;}
   document.addEventListener('touchmove',mv,{passive:false});
   document.addEventListener('touchend',function cl(){document.removeEventListener('touchmove',mv);document.removeEventListener('touchend',cl);btn.classList.remove('down');},{once:true});
 }
 function stopScroll(){}
-
-// ── BTNS ──
 function btnDown(el,btn){el.classList.add('down');vibrate(18);if(btn!=='scroll')send({type:'mousedown',button:btn});}
 function btnUp(el,btn){el.classList.remove('down');if(btn!=='scroll')send({type:'mouseup',button:btn});}
-
-// ── THEME ──
 function toggleTheme(){isDark=!isDark;document.body.setAttribute('data-theme',isDark?'dark':'light');document.getElementById('theme-btn').textContent=isDark?'☀':'☾';}
 function vibrate(ms){if(document.getElementById('t-vibe').classList.contains('on')&&navigator.vibrate)navigator.vibrate(ms);}
-
-// ── SHEETS ──
 function openSettings(){document.getElementById('ov-s').classList.add('open');document.getElementById('sh-s').classList.add('open');}
 function closeSettings(){document.getElementById('ov-s').classList.remove('open');document.getElementById('sh-s').classList.remove('open');}
 function openSignIn(){document.getElementById('ov-si').classList.add('open');document.getElementById('sh-si').classList.add('open');}
 function closeSignIn(){document.getElementById('ov-si').classList.remove('open');document.getElementById('sh-si').classList.remove('open');}
 function handleSignIn(){alert('Connect your auth backend here.\nEmail: '+(document.getElementById('si-email').value||'(social login)'));}
 
-// ── START ──
-initPeer();
+initSocket();
 </script>
 </body>
 </html>
+
+
+
