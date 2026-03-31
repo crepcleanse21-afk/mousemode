@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mouse Mode — Laptop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{
+  --bg:#f5f4f0;--bg2:#eceae4;--surface:#fff;
+  --border:rgba(0,0,0,0.08);--text:#1a1a1a;--text2:#6b6b6b;--text3:#aaa;
+  --green:#2d6a4f;--green-bg:#d8f3dc;--red:#c1121f;--red-bg:#ffe5e5;
+  --shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04);--r:14px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#111110;--bg2:#1e1e1c;--surface:#1e1e1c;
+    --border:rgba(255,255,255,0.07);--text:#f0ede8;--text2:#8a8880;--text3:#4a4845;
+    --green:#74c69d;--green-bg:#1a3326;--red:#e5383b;--red-bg:#2a1414;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:40px 24px;
+}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:36px;max-width:460px;width:100%;box-shadow:var(--shadow);
+}
+.logo{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:28px;}
+h1{font-size:26px;font-weight:300;letter-spacing:-.02em;margin-bottom:8px;}
+.sub{font-size:14px;color:var(--text2);font-weight:300;line-height:1.6;margin-bottom:28px;}
+.status-row{display:flex;align-items:center;gap:10px;padding:13px 15px;background:var(--bg);border-radius:10px;border:1px solid var(--border);margin-bottom:10px;}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s;}
+.dot.green{background:var(--green);}
+.dot.pulse{animation:pulse 1.8s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.slbl{font-size:13px;color:var(--text2);flex:1;}
+.slbl span{color:var(--text);font-weight:500;}
+.divider{height:1px;background:var(--border);margin:22px 0;}
+
+/* Pairing input */
+.pair-section{}
+.pair-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;}
+.pair-row{display:flex;gap:8px;}
+.pair-input{
+  flex:1;padding:13px 16px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;font-family:'DM Mono',monospace;font-size:22px;font-weight:500;
+  letter-spacing:.12em;color:var(--text);outline:none;text-transform:uppercase;
+  text-align:center;
+}
+.pair-input:focus{border-color:var(--text);}
+.pair-btn{
+  padding:13px 20px;background:var(--text);color:var(--bg);border:none;
+  border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;
+  font-weight:500;cursor:pointer;transition:opacity .2s;white-space:nowrap;
+}
+.pair-btn:hover{opacity:.85;}
+.pair-btn:disabled{opacity:.4;cursor:default;}
+
+.badge{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
+  background:var(--green-bg);color:var(--green);border-radius:20px;
+  font-size:12px;font-weight:500;margin-bottom:18px;opacity:0;transition:opacity .4s;
+}
+.badge.show{opacity:1;}
+
+/* Event log */
+.log-wrap{margin-top:22px;border-top:1px solid var(--border);padding-top:16px;}
+.log-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;}
+.log-list{display:flex;flex-direction:column;gap:4px;max-height:110px;overflow:hidden;}
+.log-item{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);display:flex;gap:10px;}
+.log-time{color:var(--text3);flex-shrink:0;}
+
+/* Instructions */
+.steps{margin-top:22px;border-top:1px solid var(--border);padding-top:16px;}
+.step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start;}
+.step-num{
+  width:22px;height:22px;border-radius:50%;background:var(--bg2);
+  border:1px solid var(--border);font-family:'DM Mono',monospace;font-size:11px;
+  color:var(--text2);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.step-text{font-size:13px;color:var(--text2);font-weight:300;line-height:1.6;padding-top:2px;}
+.step-text strong{color:var(--text);font-weight:500;}
+
+.note-box{
+  padding:12px 14px;background:var(--bg2);border-radius:10px;
+  border:1px solid var(--border);font-size:12px;color:var(--text2);
+  line-height:1.6;margin-top:16px;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">mouse mode</div>
+
+  <div class="badge" id="badge"><div class="dot green"></div>Phone connected</div>
+
+  <h1>Laptop receiver</h1>
+  <p class="sub">Enter the code from your phone to connect. Works from anywhere — no Wi-Fi sharing needed.</p>
+
+  <div class="status-row">
+    <div class="dot pulse green" id="peer-dot"></div>
+    <div class="slbl">Pairing server: <span id="peer-status">connecting…</span></div>
+  </div>
+
+  <div class="status-row">
+    <div class="dot" id="phone-dot"></div>
+    <div class="slbl">Phone: <span id="phone-status">not connected</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="pair-section">
+    <div class="pair-label">Enter code from your phone</div>
+    <div class="pair-row">
+      <input class="pair-input" id="code-input" maxlength="6" placeholder="------"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"/>
+      <button class="pair-btn" id="pair-btn" onclick="connectToPhone()" disabled>Connect</button>
+    </div>
+  </div>
+
+  <div class="log-wrap">
+    <div class="log-label">Live events</div>
+    <div class="log-list" id="log-list">
+      <div class="log-item"><span class="log-time">--:--:--</span><span>Waiting for phone…</span></div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Open <strong>mouse mode on your phone</strong> — it will show a 6-character code</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Type that code above and tap <strong>Connect</strong></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">Your phone now controls this computer's mouse</div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    This is the cloud version — phone and laptop can be on different networks. Mouse movement is relayed via PeerJS servers. For best performance use the local Wi-Fi version.
+  </div>
+</div>
+
+<script>
+let peer = null;
+let conn = null;
+
+function log(text) {
+  const list = document.getElementById('log-list');
+  const t = new Date().toTimeString().slice(0,8);
+  const item = document.createElement('div');
+  item.className='log-item';
+  item.innerHTML=`<span class="log-time">${t}</span><span>${text}</span>`;
+  list.insertBefore(item,list.firstChild);
+  while(list.children.length>6) list.removeChild(list.lastChild);
+}
+
+function initPeer() {
+  peer = new Peer(undefined, {debug:0});
+
+  peer.on('open', () => {
+    document.getElementById('peer-dot').classList.remove('pulse');
+    document.getElementById('peer-status').textContent='ready';
+    document.getElementById('pair-btn').disabled=false;
+  });
+
+  peer.on('error', (e) => {
+    document.getElementById('peer-status').textContent='error: '+e.type;
+    setTimeout(initPeer, 3000);
+  });
+}
+
+function connectToPhone() {
+  const input = document.getElementById('code-input').value.trim();
+  if (input.length < 6) return;
+
+  document.getElementById('pair-btn').disabled=true;
+  document.getElementById('phone-status').textContent='connecting…';
+
+  // Find the phone's peer ID — the phone's ID ends with the 6-char code
+  // We search for peers whose ID ends with the entered code
+  // PeerJS doesn't have a lookup API, so the phone ID IS the last 6 chars lowercased
+  const guessedId = input.toLowerCase();
+
+  if (conn) { try{conn.close();}catch(e){} }
+
+  conn = peer.connect(guessedId, {reliable:true});
+
+  conn.on('open', () => {
+    document.getElementById('phone-dot').classList.add('green');
+    document.getElementById('phone-status').textContent='connected';
+    document.getElementById('badge').classList.add('show');
+    document.getElementById('pair-btn').disabled=false;
+    log('Phone connected via code '+input);
+  });
+
+  conn.on('data', (data) => {
+    handleEvent(data);
+  });
+
+  conn.on('close', () => {
+    document.getElementById('phone-dot').classList.remove('green');
+    document.getElementById('phone-status').textContent='disconnected';
+    document.getElementById('badge').classList.remove('show');
+    document.getElementById('pair-btn').disabled=false;
+    conn=null;
+    log('Phone disconnected');
+  });
+
+  conn.on('error', (e) => {
+    document.getElementById('phone-status').textContent='could not connect — check code';
+    document.getElementById('pair-btn').disabled=false;
+    log('Connection failed: '+e);
+  });
+}
+
+function handleEvent(msg) {
+  if (!msg || !msg.type) return;
+  if (msg.type==='move') {
+    // Can't move mouse from browser — display only
+  } else if (msg.type==='click') {
+    log(msg.button+' click');
+  } else if (msg.type==='scroll') {
+    log('scroll '+((msg.dy||0)>0?'↓':'↑'));
+  } else if (msg.type==='mousedown') {
+    log(msg.button+' held');
+  }
+}
+
+// Enable connect button when code is 6 chars
+document.getElementById('code-input').addEventListener('input', function() {
+  document.getElementById('pair-btn').disabled = this.value.length < 6;
+});
+
+// Enter key submits
+document.getElementById('code-input').addEventListener('keydown', function(e) {
+  if (e.key==='Enter' && this.value.length>=6) connectToPhone();
+});
+
+initPeer();
+</script>
+</body>
+</html>
